@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Color of the Change</title>
+    <title>Color or Image of the Change</title>
     <script src="https://cdn.jsdelivr.net/npm/chroma-js@2.1.0/chroma.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -22,10 +22,18 @@
             <option value="Times New Roman">Times New Roman</option>
             <option value="Georgia">Georgia</option>
             <option value="Courier New">Courier New</option>
+            <!-- Add more font options as needed -->
         </select>
+        <br>
+        <label for="backgroundType">Select Background:</label>
+        <br>
+        <select id="backgroundType">
+            <option value="color">Color</option>
+            <option value="image">Image</option>
+        </select>
+        <br>
         <button onclick="saveSettings()">Save</button>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
