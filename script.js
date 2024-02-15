@@ -8,9 +8,38 @@ function getRandomColor() {
 }
 
 function setRandomColor() {
-    const color = getRandomColor();
-    document.body.style.backgroundColor = color;
-    document.getElementById('colorCode').textContent = `${color}`;
+    const backgroundType = document.getElementById('backgroundType').value;
+    if (backgroundType === 'color') {
+        const color = getRandomColor();
+        document.body.style.backgroundColor = color;
+        document.getElementById('colorCode').textContent = `${color}`;
+    }
+}
+
+function fetchRandomImage() {
+    const backgroundType = document.getElementById('backgroundType').value;
+    if (backgroundType === 'image') {
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        const isMorning = currentHour === 4 && currentMinute >= 30 || currentHour > 4 && currentHour < 7 || currentHour === 7 && currentMinute <= 18;
+        const imageUrl = isMorning ? 'https://source.unsplash.com/1600x900/?morning' : 'https://source.unsplash.com/1600x900/?nature';
+
+        fetch(imageUrl)
+            .then(response => {
+                document.body.style.backgroundImage = `url(${response.url})`;
+                document.getElementById('colorCode').textContent = ''; // Hide color code when background is set to image
+            })
+            .catch(error => console.error('Fehler beim Laden des Hintergrundbilds:', error));
+    }
+}
+
+function setBackground(type) {
+    if (type === 'color') {
+        setRandomColor();
+    } else if (type === 'image') {
+        fetchRandomImage();
+    }
 }
 
 function updateClock() {
@@ -29,9 +58,21 @@ function saveSettings() {
     const fontSelector = document.getElementById('fontSelector');
     const selectedFont = fontSelector.options[fontSelector.selectedIndex].value;
     document.body.style.fontFamily = selectedFont;
-    document.cookie = `selectedFont=${selectedFont}; expires=Fri, 31 Dec 9999 23:59:59 GMT`;
+
+    const backgroundType = document.getElementById('backgroundType');
+    const selectedBackgroundType = backgroundType.options[backgroundType.selectedIndex].value;
+    setBackground(selectedBackgroundType);
+
+    // Hier wird die Gültigkeitsdauer des Cookies auf 10 Jahre gesetzt
+    const expirationDate = new Date();
+    expirationDate.setFullYear(expirationDate.getFullYear() + 10);
+
+    document.cookie = `selectedFont=${selectedFont}; expires=${expirationDate.toUTCString()}`;
+    document.cookie = `selectedBackgroundType=${selectedBackgroundType}; expires=${expirationDate.toUTCString()}`;
+
     closeSettingsModal();
 }
+
 
 function closeSettingsModal() {
     document.getElementById('settingsModal').style.display = 'none';
@@ -54,14 +95,10 @@ if (savedFont) {
     document.getElementById('fontSelector').value = savedFont;
 }
 
-function changeColorOnKeyPress(event) {
-    setRandomColor();
-    updateClock();
-}
-
-function changeColorOnClick(event) {
-    setRandomColor();
-    updateClock();
+const savedBackgroundType = getCookie('selectedBackgroundType');
+if (savedBackgroundType) {
+    setBackground(savedBackgroundType);
+    document.getElementById('backgroundType').value = savedBackgroundType;
 }
 
 function openWebsiteOnDoubleClick(event) {
@@ -78,7 +115,9 @@ updateClock();
 setInterval(() => {
     setRandomColor();
     updateClock();
-}, 24 * 60 * 60 * 1000);
+}, 10 * 1000); // Change color every 30 seconds
+
+setInterval(fetchRandomImage, 60 * 1000); // Änderung: Das Bild wird alle 60 Sekunden automatisch geändert
 
 setInterval(updateClock, 1000);
 
@@ -87,5 +126,8 @@ window.addEventListener('resize', () => {
 });
 
 document.getElementById('settingsButton').addEventListener('click', openSettingsModal);
-document.addEventListener('click', changeColorOnClick);
-document.addEventListener('keydown', changeColorOnKeyPress);
+document.getElementById('saveButton').addEventListener('click', saveSettings);
+document.getElementById('closeButton').addEventListener('click', closeSettingsModal);
+document.getElementById('backgroundType').addEventListener('change', event => {
+    setBackground(event.target.value);
+});
